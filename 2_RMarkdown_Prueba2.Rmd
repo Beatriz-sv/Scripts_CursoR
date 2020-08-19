@@ -1,0 +1,79 @@
+---
+title: "RMarkdown Prueba 2"
+author: "Beatriz Salas"
+date: "19-08-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(dplyr)
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+```
+
+## Extint Plants Analysis 
+
+This data base contain plant species that are extinct, including actions taken to avoid their extinction and the types of threats that caused their extinction.  
+
+You can find the data base [here](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-08-18)
+
+Let's call the data base running the next code:
+
+```{r, message = FALSE, warning = FALSE}
+plants <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-08-18/plants.csv')
+
+actions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-08-18/actions.csv')
+
+threats <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-08-18/threats.csv')
+```
+
+### Analysis of data base
+
+We can extract some interesting information from this data base:
+
+The number of extinct species by continent are showed in the next table:
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+Table1 <- plants %>% 
+ dplyr::group_by(continent) %>% 
+ dplyr::count(continent) %>% 
+ dplyr::rename(num_species = n)
+  
+kable(Table1) %>% 
+kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+### Interesting facts
+
+Before the year 1900 there were `r actions %>%  
+  dplyr::filter(year_last_seen == "Before 1900") %>% nrow()`  extinct plants species already, and only in the past 20 years it has extincted other  `r actions %>% dplyr::filter(year_last_seen == "2000-2020") %>% nrow()` species. So there was a big amount of lost plant species during the human modern history. 
+  
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+threats_notUK <- threats %>% 
+  dplyr::filter(threat_type != "Unknown")
+```
+
+The are different threats that can cause the plant extinction, some of them are: `r unique(c(as.character(threats_notUK$threat_type))) `.
+
+The next table show the amount of plant species that were exposed to each threat type:
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+Table2 <- threats_notUK %>% 
+    dplyr::group_by(threat_type) %>% 
+    dplyr::count(threatened) %>%
+    dplyr::filter(threatened == 1) %>% 
+    dplyr::summarise(threat_type, n) %>% 
+    dplyr::rename(Species_Number = n)
+   
+  
+  kable(Table2) %>% 
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+
+
+
+
